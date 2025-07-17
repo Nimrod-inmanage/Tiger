@@ -7,116 +7,195 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
     <style>
+        * {
+            box-sizing: border-box;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            margin: 20px;
+            margin: 0;
+            padding: 10px;
             background-color: #f4f5f7;
+            font-size: 14px;
         }
+        
+        /* Responsive container */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 10px;
+        }
+        
+        h1 {
+            color: #172b4d;
+            font-size: clamp(1.5rem, 4vw, 2.5rem);
+            margin: 10px 0 20px 0;
+            text-align: center;
+        }
+        
         .dashboard {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
         }
+        
+        /* Desktop layout */
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+                font-size: 16px;
+            }
+            
+            .container {
+                padding: 0 20px;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                margin-bottom: 30px;
+            }
+            
+            h1 {
+                text-align: left;
+                margin: 20px 0 30px 0;
+            }
+        }
+        
         .card {
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            padding: 20px;
+            padding: 15px;
         }
+        
+        @media (min-width: 768px) {
+            .card {
+                padding: 20px;
+            }
+        }
+        
         .sprint-card {
             border-left: 4px solid #0052cc;
             margin-bottom: 15px;
-            padding: 15px;
+            padding: 12px;
             background: white;
             border-radius: 6px;
             box-shadow: 0 1px 4px rgba(0,0,0,0.1);
             cursor: move;
             transition: all 0.3s ease;
         }
+        
+        @media (min-width: 768px) {
+            .sprint-card {
+                padding: 15px;
+            }
+        }
+        
         .sprint-card:hover {
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             transform: translateY(-2px);
         }
+        
         .sprint-card.dragging {
             opacity: 0.5;
             transform: rotate(5deg);
         }
+        
         .sprint-name {
             font-weight: 600;
             margin-bottom: 10px;
             color: #172b4d;
             display: flex;
             align-items: center;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
+            line-height: 1.3;
         }
+        
         .drag-handle {
             margin-right: 8px;
             color: #97a0af;
             cursor: grab;
+            touch-action: none;
         }
+        
         .drag-handle:active {
             cursor: grabbing;
         }
+        
         .progress-bar {
-            height: 24px;
+            height: 20px;
             background: #f4f5f7;
-            border-radius: 12px;
+            border-radius: 10px;
             overflow: hidden;
             margin: 8px 0;
             position: relative;
             display: flex;
             border: 1px solid #e1e5e9;
-            /* KEY FIX: Prevent layout shift */
-            min-height: 24px;
+            min-height: 20px;
         }
+        
+        @media (min-width: 768px) {
+            .progress-bar {
+                height: 24px;
+                border-radius: 12px;
+                min-height: 24px;
+            }
+        }
+        
         .progress-segment {
             height: 100%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 11px;
+            font-size: 10px;
             color: white;
             font-weight: bold;
             text-shadow: 1px 1px 1px rgba(0,0,0,0.3);
             position: relative;
             overflow: hidden;
-            /* SMOOTH ANIMATIONS - No jumping */
-            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1), 
+            transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1),
                        opacity 0.4s ease;
             will-change: width, opacity;
         }
         
+        @media (min-width: 768px) {
+            .progress-segment {
+                font-size: 11px;
+            }
+        }
+        
         /* Segment colors */
-        .todo { 
+        .todo {
             background: linear-gradient(135deg, #ffab00, #ff8f00);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
         }
-        .inprogress { 
+        .inprogress {
             background: linear-gradient(135deg, #2684ff, #0065ff);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
         }
-        .done { 
+        .done {
             background: linear-gradient(135deg, #36b37e, #00875a);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
         }
-        .doneqadev { 
+        .doneqadev {
             background: linear-gradient(135deg, #00875a, #006644);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
         }
-        .rfqa { 
+        .rfqa {
             background: linear-gradient(135deg, #ff5630, #de350b);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
         }
-        .doneqalive { 
+        .doneqalive {
             background: linear-gradient(135deg, #006644, #004d33);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
         }
-        .notrelevant { 
+        .notrelevant {
             background: linear-gradient(135deg, #97a0af, #7a869a);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.2);
         }
         
-        /* Hide segments smoothly instead of removing them */
         .progress-segment.hidden {
             width: 0% !important;
             opacity: 0;
@@ -124,7 +203,6 @@
             font-size: 0;
         }
         
-        /* Shimmer effect */
         .progress-segment::before {
             content: '';
             position: absolute;
@@ -145,65 +223,125 @@
             display: flex;
             justify-content: space-between;
             margin-top: 10px;
-            font-size: 12px;
+            font-size: 11px;
+            gap: 10px;
         }
+        
+        @media (min-width: 768px) {
+            .metrics {
+                font-size: 12px;
+            }
+        }
+        
         .metric {
             text-align: center;
+            flex: 1;
+            min-width: 0;
         }
+        
         .metric-value {
             font-weight: bold;
-            font-size: 16px;
+            font-size: 14px;
             transition: all 0.4s ease;
         }
+        
+        @media (min-width: 768px) {
+            .metric-value {
+                font-size: 16px;
+            }
+        }
+        
         .metric-value.updating {
             color: #0052cc;
             transform: scale(1.1);
         }
         
         .health-indicator {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
             display: inline-block;
-            margin-right: 8px;
+            margin-right: 6px;
+            flex-shrink: 0;
         }
+        
+        @media (min-width: 768px) {
+            .health-indicator {
+                width: 12px;
+                height: 12px;
+                margin-right: 8px;
+            }
+        }
+        
         .healthy { background-color: #36b37e; }
         .warning { background-color: #ffab00; }
         .critical { background-color: #ff5630; }
+        
         .chart-container {
-            height: 400px;
+            height: 250px;
+            position: relative;
         }
-        h1, h2 {
+        
+        @media (min-width: 768px) {
+            .chart-container {
+                height: 400px;
+            }
+        }
+        
+        h2 {
             color: #172b4d;
+            font-size: clamp(1.1rem, 3vw, 1.5rem);
+            margin: 0 0 15px 0;
         }
+        
         .legend {
             display: flex;
             flex-wrap: wrap;
-            gap: 15px;
+            gap: 8px;
             margin: 15px 0;
             justify-content: center;
         }
+        
+        @media (min-width: 768px) {
+            .legend {
+                gap: 15px;
+            }
+        }
+        
         .legend-item {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 12px;
+            gap: 6px;
+            font-size: 11px;
             cursor: pointer;
-            padding: 8px 12px;
-            border-radius: 20px;
+            padding: 6px 10px;
+            border-radius: 15px;
             background: #f4f5f7;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             user-select: none;
+            touch-action: manipulation;
         }
+        
+        @media (min-width: 768px) {
+            .legend-item {
+                gap: 8px;
+                font-size: 12px;
+                padding: 8px 12px;
+                border-radius: 20px;
+            }
+        }
+        
         .legend-item:hover {
             background: #e4e6ea;
             transform: translateY(-1px);
         }
+        
         .legend-item.active {
             background: #deebff;
             border: 2px solid #0052cc;
             transform: scale(1.05);
         }
+        
         .legend-item.toggling {
             animation: pulse 0.4s ease;
         }
@@ -215,101 +353,182 @@
         }
         
         .legend-color {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 2px;
+            flex-shrink: 0;
         }
+        
+        @media (min-width: 768px) {
+            .legend-color {
+                width: 12px;
+                height: 12px;
+            }
+        }
+        
         .legend-checkbox {
-            width: 16px;
-            height: 16px;
-            margin-right: 4px;
+            width: 14px;
+            height: 14px;
+            margin-right: 2px;
+            flex-shrink: 0;
         }
+        
+        @media (min-width: 768px) {
+            .legend-checkbox {
+                width: 16px;
+                height: 16px;
+                margin-right: 4px;
+            }
+        }
+        
         .filter-controls {
             background: #f8f9fa;
-            padding: 15px;
+            padding: 12px;
             border-radius: 6px;
             margin-bottom: 15px;
             border: 1px solid #e1e5e9;
         }
+        
+        @media (min-width: 768px) {
+            .filter-controls {
+                padding: 15px;
+            }
+        }
+        
         .filter-title {
             font-weight: 600;
             margin-bottom: 10px;
             color: #172b4d;
+            font-size: clamp(0.9rem, 2.5vw, 1rem);
         }
+        
         .ghost {
             background: #deebff !important;
             border: 2px dashed #0052cc !important;
             opacity: 0.5;
         }
+        
         .empty-filter {
             text-align: center;
-            padding: 20px;
+            padding: 15px;
             color: #97a0af;
             font-style: italic;
             opacity: 0;
             animation: fadeIn 0.5s ease forwards;
+            font-size: 12px;
+        }
+        
+        @media (min-width: 768px) {
+            .empty-filter {
+                padding: 20px;
+                font-size: 14px;
+            }
         }
         
         @keyframes fadeIn {
             to { opacity: 1; }
         }
+        
+        /* Touch improvements for mobile */
+        @media (max-width: 767px) {
+            .sprint-card {
+                touch-action: pan-y;
+            }
+            
+            .legend-item {
+                min-height: 44px; /* Minimum touch target size */
+            }
+            
+            /* Prevent horizontal scroll */
+            body {
+                overflow-x: hidden;
+            }
+            
+            /* Better spacing for mobile */
+            .sprint-name {
+                word-break: break-word;
+                hyphens: auto;
+            }
+        }
+        
+        /* Landscape mobile adjustments */
+        @media (max-width: 767px) and (orientation: landscape) {
+            .chart-container {
+                height: 200px;
+            }
+            
+            .dashboard {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+        }
+        
+        /* Large desktop */
+        @media (min-width: 1200px) {
+            .container {
+                padding: 0 40px;
+            }
+            
+            .dashboard {
+                gap: 30px;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>🎯 Sprint Progress Dashboard - Tiger Project</h1>
-    
-    <div class="dashboard">
+    <div class="container">
+        <h1>🎯 Sprint Progress Dashboard - Tiger Project</h1>
+        <div class="dashboard">
+            <div class="card">
+                <h2>📊 Overall Progress</h2>
+                <div class="chart-container">
+                    <canvas id="overallChart"></canvas>
+                </div>
+            </div>
+            <div class="card">
+                <h2>🔥 Active Sprints Health</h2>
+                <div class="chart-container">
+                    <canvas id="activeSprintsChart"></canvas>
+                </div>
+            </div>
+        </div>
         <div class="card">
-            <h2>📊 Overall Progress</h2>
-            <div class="chart-container">
-                <canvas id="overallChart"></canvas>
-            </div>
-        </div>
-        
-        <div class="card">
-            <h2>🔥 Active Sprints Health</h2>
-            <div class="chart-container">
-                <canvas id="activeSprintsChart"></canvas>
-            </div>
-        </div>
-    </div>
-
-    <div class="card">
-        <h2>📋 Sprint Details</h2>
-        <div class="filter-controls">
-            <div class="filter-title">📌 Filter Statuses (Click to toggle):</div>
-            <div class="legend" id="statusFilters">
-                <div class="legend-item active" data-status="todo">
-                    <input type="checkbox" class="legend-checkbox" checked>
-                    <div class="legend-color todo"></div>To Do
-                </div>
-                <div class="legend-item active" data-status="inprogress">
-                    <input type="checkbox" class="legend-checkbox" checked>
-                    <div class="legend-color inprogress"></div>In Progress
-                </div>
-                <div class="legend-item active" data-status="done">
-                    <input type="checkbox" class="legend-checkbox" checked>
-                    <div class="legend-color done"></div>Done
-                </div>
-                <div class="legend-item active" data-status="doneqadev">
-                    <input type="checkbox" class="legend-checkbox" checked>
-                    <div class="legend-color doneqadev"></div>Done QA Dev
-                </div>
-                <div class="legend-item active" data-status="rfqa">
-                    <input type="checkbox" class="legend-checkbox" checked>
-                    <div class="legend-color rfqa"></div>RFQA
-                </div>
-                <div class="legend-item active" data-status="doneqalive">
-                    <input type="checkbox" class="legend-checkbox" checked>
-                    <div class="legend-color doneqalive"></div>Done QA Live
-                </div>
-                <div class="legend-item active" data-status="notrelevant">
-                    <input type="checkbox" class="legend-checkbox" checked>
-                    <div class="legend-color notrelevant"></div>Not Relevant
+            <h2>📋 Sprint Details</h2>
+            <div class="filter-controls">
+                <div class="filter-title">📌 Filter Statuses (Click to toggle):</div>
+                <div class="legend" id="statusFilters">
+                    <div class="legend-item active" data-status="todo">
+                        <input type="checkbox" class="legend-checkbox" checked>
+                        <div class="legend-color todo"></div>To Do
+                    </div>
+                    <div class="legend-item active" data-status="inprogress">
+                        <input type="checkbox" class="legend-checkbox" checked>
+                        <div class="legend-color inprogress"></div>In Progress
+                    </div>
+                    <div class="legend-item active" data-status="done">
+                        <input type="checkbox" class="legend-checkbox" checked>
+                        <div class="legend-color done"></div>Done
+                    </div>
+                    <div class="legend-item active" data-status="doneqadev">
+                        <input type="checkbox" class="legend-checkbox" checked>
+                        <div class="legend-color doneqadev"></div>Done QA Dev
+                    </div>
+                    <div class="legend-item active" data-status="rfqa">
+                        <input type="checkbox" class="legend-checkbox" checked>
+                        <div class="legend-color rfqa"></div>RFQA
+                    </div>
+                    <div class="legend-item active" data-status="doneqalive">
+                        <input type="checkbox" class="legend-checkbox" checked>
+                        <div class="legend-color doneqalive"></div>Done QA Live
+                    </div>
+                    <div class="legend-item active" data-status="notrelevant">
+                        <input type="checkbox" class="legend-checkbox" checked>
+                        <div class="legend-color notrelevant"></div>Not Relevant
+                    </div>
                 </div>
             </div>
+            <div id="sprintCards"></div>
         </div>
-        <div id="sprintCards"></div>
     </div>
 
     <script>
@@ -326,7 +545,6 @@
             { id: 10, name: 'צד שרת - עגלת קניות', todo: 0, inprogress: 2, done: 0, doneqadev: 0, rfqa: 0, doneqalive: 6, notrelevant: 0, total: 8 },
             { id: 11, name: 'התחברות והרשמה', todo: 2, inprogress: 0, done: 0, doneqadev: 0, rfqa: 1, doneqalive: 4, notrelevant: 0, total: 7 }
         ];
-
         let activeStatuses = {
             todo: true,
             inprogress: true,
@@ -336,30 +554,23 @@
             doneqalive: true,
             notrelevant: true
         };
-
         let overallChart, activeSprintsChart;
-
         // Calculate completion percentage and health
         function calculateMetrics(sprint) {
             const completed = sprint.done + sprint.doneqadev + sprint.doneqalive;
             const completionRate = Math.round((completed / sprint.total) * 100);
             const activeWork = sprint.todo + sprint.inprogress + sprint.rfqa;
-            
             let health = 'healthy';
             if (sprint.todo > sprint.inprogress * 3 && activeWork > 0) health = 'warning';
             if (sprint.todo > 10 && sprint.inprogress === 0) health = 'critical';
-            
             return { completionRate, activeWork, health };
         }
-
         // FIXED: Update existing cards instead of recreating them
         function updateSprintCards() {
             const container = document.getElementById('sprintCards');
             const existingCards = container.querySelectorAll('.sprint-card');
-            
             sprintData.forEach((sprint, index) => {
                 let card = existingCards[index];
-                
                 if (!card) {
                     // Create new card if it doesn't exist
                     card = createNewSprintCard(sprint);
@@ -369,20 +580,16 @@
                     updateExistingSprintCard(card, sprint);
                 }
             });
-            
             // Remove extra cards if any
             for (let i = sprintData.length; i < existingCards.length; i++) {
                 existingCards[i].remove();
             }
         }
-
         function createNewSprintCard(sprint) {
             const card = document.createElement('div');
             card.className = 'sprint-card';
             card.dataset.sprintId = sprint.id;
-            
             const metrics = calculateMetrics(sprint);
-            
             card.innerHTML = `
                 <div class="sprint-name">
                     <span class="drag-handle">⋮⋮</span>
@@ -407,32 +614,24 @@
                     </div>
                 </div>
             `;
-            
             // Trigger initial animation
             setTimeout(() => updateExistingSprintCard(card, sprint), 50);
-            
             return card;
         }
-
         function updateExistingSprintCard(card, sprint) {
             const metrics = calculateMetrics(sprint);
-            
             // Update progress segments with smooth transitions
             updateProgressBar(card, sprint);
-            
             // Update metrics with animation
             const metricValues = card.querySelectorAll('.metric-value');
             const visibleTotal = calculateVisibleTotal(sprint);
-            
             animateValue(metricValues[0], metrics.completionRate, '%');
             animateValue(metricValues[1], visibleTotal);
             animateValue(metricValues[2], sprint.total);
-            
             // Update health indicator
             const healthIndicator = card.querySelector('.health-indicator');
             healthIndicator.className = `health-indicator ${metrics.health}`;
         }
-
         function calculateVisibleTotal(sprint) {
             let total = 0;
             Object.keys(activeStatuses).forEach(status => {
@@ -442,27 +641,22 @@
             });
             return total;
         }
-
         function createProgressSegments(sprint) {
             const segments = ['todo', 'inprogress', 'done', 'doneqadev', 'rfqa', 'doneqalive', 'notrelevant'];
-            return segments.map(status => 
+            return segments.map(status =>
                 `<div class="progress-segment ${status}" data-status="${status}" style="width: 0%;">0</div>`
             ).join('');
         }
-
         function updateProgressBar(card, sprint) {
             const progressBar = card.querySelector('.progress-bar');
             const segments = progressBar.querySelectorAll('.progress-segment');
-            
             // Calculate visible total and percentages
             const visibleTotal = calculateVisibleTotal(sprint);
-            
             if (visibleTotal === 0) {
                 // Hide all segments and show empty message
                 segments.forEach(segment => {
                     segment.classList.add('hidden');
                 });
-                
                 if (!progressBar.querySelector('.empty-filter')) {
                     const emptyDiv = document.createElement('div');
                     emptyDiv.className = 'empty-filter';
@@ -471,25 +665,20 @@
                 }
                 return;
             }
-            
             // Remove empty message if it exists
             const emptyFilter = progressBar.querySelector('.empty-filter');
             if (emptyFilter) emptyFilter.remove();
-            
             // Update each segment
             segments.forEach(segment => {
                 const status = segment.dataset.status;
                 const value = sprint[status];
                 const isActive = activeStatuses[status];
-                
                 if (isActive && value > 0) {
                     const percentage = (value / visibleTotal) * 100;
-                    
                     // Show segment with animation
                     segment.classList.remove('hidden');
                     segment.style.width = `${percentage}%`;
                     segment.textContent = value;
-                    
                     // Add shimmer effect
                     setTimeout(() => {
                         segment.classList.add('shimmer');
@@ -501,24 +690,19 @@
                 }
             });
         }
-
         function animateValue(element, targetValue, suffix = '') {
             const currentValue = parseInt(element.textContent) || 0;
             if (currentValue === targetValue) return;
-            
             element.classList.add('updating');
-            
             const duration = 400;
             const steps = 20;
             const stepValue = (targetValue - currentValue) / steps;
             const stepDuration = duration / steps;
-            
             let step = 0;
             const timer = setInterval(() => {
                 step++;
                 const newValue = Math.round(currentValue + (stepValue * step));
                 element.textContent = newValue + suffix;
-                
                 if (step >= steps) {
                     clearInterval(timer);
                     element.textContent = targetValue + suffix;
@@ -526,24 +710,19 @@
                 }
             }, stepDuration);
         }
-
         // FIXED: Create initial cards without jumping
         function createSprintCards() {
             const container = document.getElementById('sprintCards');
             container.innerHTML = '';
-            
             sprintData.forEach(sprint => {
                 const card = createNewSprintCard(sprint);
                 container.appendChild(card);
             });
-            
             initializeDragAndDrop();
         }
-
         // Initialize drag and drop functionality
         function initializeDragAndDrop() {
             const container = document.getElementById('sprintCards');
-            
             new Sortable(container, {
                 animation: 150,
                 ghostClass: 'ghost',
@@ -553,51 +732,41 @@
                 },
                 onEnd: function(evt) {
                     evt.item.classList.remove('dragging');
-                    
                     const movedSprintId = parseInt(evt.item.dataset.sprintId);
                     const newIndex = evt.newIndex;
-                    
                     const movedSprint = sprintData.find(sprint => sprint.id === movedSprintId);
                     sprintData = sprintData.filter(sprint => sprint.id !== movedSprintId);
                     sprintData.splice(newIndex, 0, movedSprint);
-                    
                     updateCharts();
                 }
             });
         }
-
         // Handle status filter toggles - NO MORE JUMPING!
         function initializeStatusFilters() {
             const filterItems = document.querySelectorAll('#statusFilters .legend-item');
-            
             filterItems.forEach(item => {
                 item.addEventListener('click', function() {
                     const status = this.dataset.status;
                     const checkbox = this.querySelector('.legend-checkbox');
-                    
                     // Add pulse animation
                     this.classList.add('toggling');
                     setTimeout(() => this.classList.remove('toggling'), 400);
-                    
                     // Toggle status
                     activeStatuses[status] = !activeStatuses[status];
                     checkbox.checked = activeStatuses[status];
                     this.classList.toggle('active', activeStatuses[status]);
-                    
                     // FIXED: Update existing cards instead of recreating
                     updateSprintCards();
                     updateCharts();
                 });
             });
         }
-
         // Update charts
         function updateCharts() {
             const visibleTotals = {
-                todo: 0, inprogress: 0, done: 0, doneqadev: 0, 
+                todo: 0, inprogress: 0, done: 0, doneqadev: 0,
                 rfqa: 0, doneqalive: 0, notrelevant: 0
             };
-            
             sprintData.forEach(sprint => {
                 Object.keys(activeStatuses).forEach(status => {
                     if (activeStatuses[status]) {
@@ -605,11 +774,9 @@
                     }
                 });
             });
-
             const labels = [];
             const data = [];
             const colors = [];
-            
             const statusConfig = {
                 todo: { label: 'To Do', color: '#ffab00' },
                 inprogress: { label: 'In Progress', color: '#2684ff' },
@@ -619,7 +786,6 @@
                 doneqalive: { label: 'Done QA Live', color: '#006644' },
                 notrelevant: { label: 'Not Relevant', color: '#97a0af' }
             };
-
             Object.keys(statusConfig).forEach(status => {
                 if (activeStatuses[status] && visibleTotals[status] > 0) {
                     labels.push(statusConfig[status].label);
@@ -627,19 +793,17 @@
                     colors.push(statusConfig[status].color);
                 }
             });
-
             overallChart.data.labels = labels;
             overallChart.data.datasets[0].data = data;
-            overallChart.data.datasets[0].backgroundColor = colors;
+            overallChart.data.datasets
+                        overallChart.data.datasets[0].backgroundColor = colors;
             overallChart.update('active');
-
             // Update active sprints chart
-            const activeSprintsData = sprintData.filter(s => 
-                (activeStatuses.todo && s.todo > 0) || 
-                (activeStatuses.inprogress && s.inprogress > 0) || 
+            const activeSprintsData = sprintData.filter(s =>
+                (activeStatuses.todo && s.todo > 0) ||
+                (activeStatuses.inprogress && s.inprogress > 0) ||
                 (activeStatuses.rfqa && s.rfqa > 0)
             );
-            
             const datasets = [];
             if (activeStatuses.todo) {
                 datasets.push({
@@ -662,13 +826,11 @@
                     backgroundColor: '#ff5630'
                 });
             }
-
             activeSprintsChart.data.labels = activeSprintsData.map(s => s.name.substring(0, 20) + '...');
             activeSprintsChart.data.datasets = datasets;
             activeSprintsChart.update('active');
         }
-
-        // Initialize charts
+        // Initialize charts with responsive options
         function initializeCharts() {
             const ctx1 = document.getElementById('overallChart').getContext('2d');
             overallChart = new Chart(ctx1, {
@@ -688,17 +850,25 @@
                         duration: 600
                     },
                     plugins: {
-                        legend: { display: false }
+                        legend: { 
+                            display: true,
+                            position: window.innerWidth < 768 ? 'bottom' : 'right',
+                            labels: {
+                                boxWidth: window.innerWidth < 768 ? 10 : 12,
+                                font: {
+                                    size: window.innerWidth < 768 ? 10 : 12
+                                }
+                            }
+                        }
                     }
                 }
             });
-
             const activeSprintsData = sprintData.filter(s => s.todo > 0 || s.inprogress > 0 || s.rfqa > 0);
             const ctx2 = document.getElementById('activeSprintsChart').getContext('2d');
             activeSprintsChart = new Chart(ctx2, {
                 type: 'bar',
                 data: {
-                    labels: activeSprintsData.map(s => s.name.substring(0, 20) + '...'),
+                    labels: activeSprintsData.map(s => s.name.substring(0, window.innerWidth < 768 ? 15 : 20) + '...'),
                     datasets: [
                         {
                             label: 'To Do',
@@ -724,16 +894,73 @@
                         duration: 600
                     },
                     scales: {
-                        x: { stacked: true },
-                        y: { stacked: true }
+                        x: { 
+                            stacked: true,
+                            ticks: {
+                                font: {
+                                    size: window.innerWidth < 768 ? 9 : 11
+                                }
+                            }
+                        },
+                        y: { 
+                            stacked: true,
+                            ticks: {
+                                font: {
+                                    size: window.innerWidth < 768 ? 9 : 11
+                                }
+                            }
+                        }
                     },
                     plugins: {
-                        legend: { display: false }
+                        legend: { 
+                            display: true,
+                            position: window.innerWidth < 768 ? 'bottom' : 'top',
+                            labels: {
+                                boxWidth: window.innerWidth < 768 ? 10 : 12,
+                                font: {
+                                    size: window.innerWidth < 768 ? 10 : 12
+                                }
+                            }
+                        }
                     }
                 }
             });
         }
-
+        
+        // Handle window resize for responsive charts
+        function handleResize() {
+            if (overallChart && activeSprintsChart) {
+                // Update chart options for new screen size
+                const isMobile = window.innerWidth < 768;
+                
+                overallChart.options.plugins.legend.position = isMobile ? 'bottom' : 'right';
+                overallChart.options.plugins.legend.labels.boxWidth = isMobile ? 10 : 12;
+                overallChart.options.plugins.legend.labels.font.size = isMobile ? 10 : 12;
+                
+                activeSprintsChart.options.plugins.legend.position = isMobile ? 'bottom' : 'top';
+                activeSprintsChart.options.plugins.legend.labels.boxWidth = isMobile ? 10 : 12;
+                activeSprintsChart.options.plugins.legend.labels.font.size = isMobile ? 10 : 12;
+                activeSprintsChart.options.scales.x.ticks.font.size = isMobile ? 9 : 11;
+                activeSprintsChart.options.scales.y.ticks.font.size = isMobile ? 9 : 11;
+                
+                // Update chart labels for mobile
+                const activeSprintsData = sprintData.filter(s => s.todo > 0 || s.inprogress > 0 || s.rfqa > 0);
+                activeSprintsChart.data.labels = activeSprintsData.map(s => 
+                    s.name.substring(0, isMobile ? 15 : 20) + '...'
+                );
+                
+                overallChart.update('none');
+                activeSprintsChart.update('none');
+            }
+        }
+        
+        // Debounce resize handler
+        let resizeTimeout;
+        window.addEventListener('resize', function() {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(handleResize, 250);
+        });
+        
         // Initialize everything
         document.addEventListener('DOMContentLoaded', function() {
             initializeCharts();
